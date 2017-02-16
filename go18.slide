@@ -41,7 +41,7 @@ Slides [[https://creativecommons.org/licenses/by-sa/4.0/][CC BY-SA 4.0]], [[http
 * Ports
 
 - linux/mips (32bit BE and LE) now supported, FP required
-- DragonflyBSD/OpenBSD [[https://go-review.googlesource.com/#/c/34093/][(1)]]/macOS [[https://go-review.googlesource.com/#/c/25495/][(2)]] won't work on certain older version
+- Go 1.8 won't work on certain older DragonflyBSD/OpenBSD [[https://go-review.googlesource.com/#/c/34093/][(1)]]/macOS [[https://go-review.googlesource.com/#/c/25495/][(2)]] versions
 
 : openbsd: kill changed between thread/process
 : macos: gettimeofday changed in macos sierra
@@ -60,6 +60,7 @@ When explicitly converting structs, tags are ignored
 # go fix: not that important: go fix: "golang.org/x/net/context" to "context"
 # : go1.8rc3 tool fix -force context fix.go
 
+- fewer false positives
 - copying an array of locks [[https://go-review.googlesource.com/#/c/24340/][(1)]]
 - deferred calls to HTTP Response.Body.Close before checking errors
 - duplicate JSON and XML struct field tags [[https://go-review.googlesource.com/#/c/16704/][(2)]]
@@ -140,13 +141,17 @@ garbage collection faster again: pauses usually under 100μs, often 10μs
 : more improvements to come
 
 
-* Compiler
+* Performance of compiler
 
-- About 12-15% faster compilation compare to Go 1.7 [[https://dave.cheney.net/2016/11/19/go-1-8-toolchain-improvements][(1)]]
-- New frontend, improvements will come in Go 1.9
+
+* Performance of compiler
+
+compilation about 12-15% faster compared to Go 1.7 [[https://dave.cheney.net/2016/11/19/go-1-8-toolchain-improvements][(1)]]
 
 .image img/screenshot-build-times-go-18-dave-cheney.png _ 800
 
+
+: new frontend, improvements will come in Go 1.9
 
 : new frontend is faster, but needs to convert from new ast to old ast
 : new frontend can be parallelized, becoming faster
@@ -158,7 +163,7 @@ garbage collection faster again: pauses usually under 100μs, often 10μs
 
 * Toolchain
 
-cgo: CGO_ENABLED remembered when compiling go
+cgo: $CGO_ENABLED remembered when compiling go
 
 
 * Toolchain
@@ -177,7 +182,7 @@ new
 
 	$ go doc net.Conn.SetDeadline
 
-documentation for function in interface
+: documentation for function in interface
 
 
 * Runtime
@@ -241,10 +246,12 @@ using:
 
 * Standard library
 
-- crypto
+
+* Standard library
+
+- many many changes
 - more context: net.Resolve, sql
 - sql: named parameters
-- http: server shutdown, http/2 push
 
 
 * Standard library
