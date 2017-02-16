@@ -1,0 +1,298 @@
+Go 1.8 Release Party
+Golang Amsterdam Meetup
+16 Feb 2017
+
+Mechiel Lukkien
+m.lukkien@irias.nl
+https://bitbucket.org/mjl/go1.8-release-party-slides
+
+
+* Go 1.8 release!
+
+February 16th, maybe?
+
+.image img/rocket.jpg _ 500
+
+Slides [[https://creativecommons.org/licenses/by-sa/4.0/][CC BY-SA 4.0]], [[https://github.com/davecheney/go-1.8-release-party][more]], [[https://talks.golang.org/2017/state-of-go.slide][more]]
+
+: this talk: highlights of the changes
+: for more info, read the release notes
+: slides have links to more details
+: based on dave cheneys release party slides and content from francesc campoy
+: CC BY-SA 4.0, creative commons attribution-sharealike 4.0 license
+: CC BY 3.0
+
+
+* Who has tried it?
+
+: who installed a release candidate?
+: who installed 1.8 already?
+: who has read the changelog already?
+
+: rc3 released on january 26th
+
+
+* Trying it
+
+	$ go get golang.org/x/build/version/go1.8rc3
+	$ go1.8rc3 download
+
+
+* Ports
+
+- linux/mips (32bit BE and LE) now supported, FP required
+- DragonflyBSD/OpenBSD [[https://go-review.googlesource.com/#/c/34093/][(1)]]/macOS [[https://go-review.googlesource.com/#/c/25495/][(2)]] won't work on certain older version
+
+: openbsd: kill changed between thread/process
+: macos: gettimeofday changed in macos sierra
+
+
+* Struct conversion
+
+When explicitly converting structs, tags are ignored
+
+.play ex/tags.go /START OMIT/,/END OMIT/
+
+
+
+* Vet
+
+# go fix: not that important: go fix: "golang.org/x/net/context" to "context"
+# : go1.8rc3 tool fix -force context fix.go
+
+- copying an array of locks [[https://go-review.googlesource.com/#/c/24340/][(1)]]
+- deferred calls to HTTP Response.Body.Close before checking errors
+- duplicate JSON and XML struct field tags [[https://go-review.googlesource.com/#/c/16704/][(2)]]
+- non-space-separated struct tags [[https://github.com/golang/go/issues/14466][(3)]]
+# just a bugfix it semes: - indexed arguments in Printf
+
+.play ex/badtag.go /START OMIT/,/END OMIT/
+
+
+
+* Compiler
+
+- SSA for all archs!
+
+: SSA - single static assignment
+: plan9 backend has been removed
+: SSA everywhere means more arch benefit from optimizations
+
+
+* Performance of your code
+
+
+* Performance
+
+- defer overhead halved
+- cgo: overhead of calling from Go into C halved
+
+
+* Performance
+
+many improvements to standard library
+
+
+* Performance
+
+- generated code, biggest performance gain for ARM (due to SSA, 20-30% on tests)
+- for amd64, improvements between 0-10%
+
+
+* Performance
+
+garbage collection faster again: pauses usually under 100μs, often 10μs
+
+
+
+: Smaller binaries
+
+
+* Garbage collector
+
+: slides from francesc campoy
+
+
+* go 1.5
+
+.image state-of-go/img/gct1.png _ 900
+
+
+* go 1.6
+
+.image state-of-go/img/gct2.png _ 900
+
+
+* go 1.7
+
+.image state-of-go/img/gct4.png _ 900
+
+
+* go 1.8 (beta 1)
+
+.image state-of-go/img/gct5.png _ 700
+
+
+* go 1.8 (beta 1) CPU
+
+.image state-of-go/img/gctcpu.png _ 800
+
+: more improvements to come
+
+
+* Compiler
+
+- About 12-15% faster compilation compare to Go 1.7 [[https://dave.cheney.net/2016/11/19/go-1-8-toolchain-improvements][(1)]]
+- New frontend, improvements will come in Go 1.9
+
+.image img/screenshot-build-times-go-18-dave-cheney.png _ 800
+
+
+: new frontend is faster, but needs to convert from new ast to old ast
+: new frontend can be parallelized, becoming faster
+: go tool yacc moved away to tools repo because no longer necessary for compiling
+
+
+* Toolchain
+
+
+* Toolchain
+
+cgo: CGO_ENABLED remembered when compiling go
+
+
+* Toolchain
+
+default $GOPATH: $HOME/go
+
+
+* Toolchain
+
+new
+
+	$ go bug
+
+
+* Toolchain
+
+	$ go doc net.Conn.SetDeadline
+
+documentation for function in interface
+
+
+* Runtime
+
+
+* Runtime
+
+function parameters liveness:
+
+no longer always until end of function
+
+
+* Runtime
+
+improved concurrent map misuse checks
+
+
+* Runtime
+
+mutex contention profiling
+
+
+	% go test examples/mutex_test.go -bench=. -mutexprofile=mutex.out
+	% go tool pprof mutex.test mutex.out
+	(pprof) list
+	Total: 290.81ms
+	ROUTINE ======================== command-line-arguments.(*Map).Put in /Users/dfc/devel/go-1.8-release-party/examples/mutex_test.go
+	     0   290.81ms (flat, cum)   100% of Total
+	     .          .      9:}
+	     .          .     10:
+	     .          .     11:func (m *Map) Put(key string, val int) {
+	     .          .     12:   m.Lock()
+	     .          .     13:   m.m[key] = val
+	     .   290.81ms     14:   m.Unlock()
+	     .          .     15:}
+	     .          .     16:
+	     .          .     17:func BenchmarkMutex(b *testing.B) {
+	     .          .     18:   const N = 16
+	     .          .     19:   for n := 0; n < b.N; n++ {
+
+
+
+* Runtime
+
+plugins
+
+	$ go build -buildmode=plugin myplugin.go
+
+using:
+
+	p, err := plugin.Open("myplugin.so")
+	...
+	f, err := p.Lookup("F")
+	...
+	f.(func())()
+
+
+: dynamically load code
+: linux-only
+
+
+* Standard library
+
+- crypto
+- more context: net.Resolve, sql
+- sql: named parameters
+- http: server shutdown, http/2 push
+
+
+* Standard library
+
+	sort.Slice(a, func(i, j int) bool {
+		return a[i].Value < a[j].Value
+	})
+
+versus existing sort.Sort:
+
+	func Sort(data Interface) // with Len, Less, Swap
+
+
+
+* More!
+
+read the release notes!
+
+.link https://tip.golang.org/doc/go1.8
+
+and
+
+.link https://dave.cheney.net/2016/11/19/go-1-8-toolchain-improvements
+
+.link https://go-talks.appspot.com/github.com/dlsniper/talks/2016/go1.8/talk.slide
+
+.link https://talks.golang.org/2017/state-of-go.slide
+
+
+* The Future: Go 1.9
+
+- type aliases?
+- dependency management tool?
+- monotonic clock for time?
+- faster compilation?
+- better inlining?
+- more gc improvements?
+- standardized logging interface?
+- ARMv5 support dropped?
+# apparently not: - new calling convention?
+# no idea: - request-oriented gc?
+
+
+* Conclusion
+
+Upgrade to Go 1.8!
+
+It's the best release _ever_!
+
+
+.image img/party-gopher.png _ 200
